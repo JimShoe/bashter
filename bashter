@@ -327,7 +327,7 @@ F_getsysupdates () {
       fi
 
       # if we havent run since last apt-get update, run now
-      if [ $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
+      if [ ! "$STAT_SYSUPDATES" -o $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
         STAT_SYSUPDATES=`apt-get --just-print --quiet --quiet dist-upgrade | grep --count "^Inst"`
         GLOBAL_SYSUPDATES=$CTIME
       fi
