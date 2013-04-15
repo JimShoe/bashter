@@ -1,0 +1,97 @@
+Sets useful variables in your bash scripts
+
+History: 
+2013-04-15, nathan@frcv.net:                                                                                   
+      v0.5: Added getsysupdates.                                                                               
+          : Also moved to dir, and added a readme.   
+2013-04-08, nathan@frcv.net:
+      v0.4: Added xscreensaver activity.
+          : Functions now in groups, this helps with documentation.
+2013-04-04, nathan@frcv.net, brimstone@the.narrow.ws:
+      v0.3: Removed evalall from save.
+          : Fixed disk naming be consistent
+          : Used flock to make multiple instances play nicely.
+2013-02-23, nathan@frcv.net:
+      v0.2: Can be called with command line arguments.
+          : Also print help file.
+2013-02-06, nathan@frcv.net:
+      v0.1: Initial release with support for getload, getmem
+          : getip and sshagent
+
+Requires:
+  * awk
+  * grep
+  * wget
+  * ip
+  * flock
+
+Usage:
+  1.  Declare classes: declare -a CLASS_#=(timeout_in_sec, 'function_name')
+  2.  Set Memfile Loc: MEMFILE=/file/stored/in/ram
+  3a. Include bashter: source baster
+  3b. Run normally   : ./bashter function_name
+  4.  Use Variables  : echo $STAT_LOAD
+
+
+                               HARDWARE
+-------------------------------------------------------------------------------------------
+getbatt       : Sets Battery usage stats.
+                  STAT_BATT_P : Percent 
+                  STAT_BATT_C : Charging
+                  STAT_BATT_T : Time Remaining
+getcpu        : Sets STAT_CPU_P_CPU[num] with percent used cpu.
+                  Note: Has to run at least twice one sec apart.
+getdisks      : Sets Disk usage stats.
+                  STAT_DISK[num]_DEV   : Device
+                  STAT_DISK[num]_TYPE  : File System Type
+                  STAT_DISK[num]_SIZE  : Disk Space in MB
+                  STAT_DISK[num]_USED  : Used Disk Space in MB
+                  STAT_DISK[num]_USEDP : Percent Used Disk Space
+                  STAT_DISK[num]_FREE  : Free Disk Space in MB
+                  STAT_DISK[num]_FREEP : Percent Free Disk Space
+                  STAT_DISK[num]_MNT   : Mount Directory
+                  STAT_DISK_NUM        : Number of Disks
+getload       : Sets STAT_LOAD to current load.
+getmdata      : Sets STAT_RAID_MDETA to time until mdraid is finished it's current processes.
+getmem        : Sets Memory usage stats.
+                  STAT_MEM_U      : used 
+                  STAT_MEM_F      : free
+                  STAT_MEM_T      : total
+                  STAT_MEM_UP     : Used Percent
+                  STAT_MEM_COMMIT : Percent of memory applications have requested
+                                  : This could be over 100% if you've over committed memory
+gettemp       : Sets STAT_TEMP to acpi -t 
+
+                               NETWORK
+-------------------------------------------------------------------------------------------
+getessid      : Sets STAT_ESSID_[interface] with essid.
+getexternalip : Sets STAT_EXT_IP to your external IP address.
+getgw         : Sets STAT_GW_DEF to you default gateway device.
+getip         : Sets STAT_IP_[interface].
+getnetspeed   : Sets STAT_NETSPEED_RCV_[device] and STAT_NETSPEED_TX_[device] with Bps.
+                  Note: Has to run at least twice one sec apart.
+
+                               SOFTWARE
+-------------------------------------------------------------------------------------------
+getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 if error.
+screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
+sshagent      : Sets STAT_SSH_AGENT to 0 or 1 based on if ssh-add has identities set.
+
+
+
+Copyright (C) 2013 Nathan Warner <nathan@frcv.net>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
