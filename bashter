@@ -360,6 +360,22 @@ F_sshagent () {
   [ $1 ] && printSTAT $prefix
 }
 
+#DOC 
+#DOC                                MAINTENANCE
+#DOC -------------------------------------------------------------------------------------------
+#DOC refresh       : Delete and recreate the cash.  Run this is something is weird.
+refresh () {
+  rm $MEMFILE
+  GLOBAL_LTIME=$CTIME
+  # set currant time for each class defined.
+  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
+    eval "GLOBAL_$class=$CTIME"
+  done
+  runall
+  save
+  exit
+}
+
 ############################  End Stat Functions #############################################
 
 # Save all STAT variables to the MEMFILE
@@ -419,6 +435,7 @@ DTIME=$(($CTIME - $GLOBAL_LTIME))
 
 # If we have arguments run them as functions
 if [ "$1" ]; then
+  [ $1 == "refresh" ] && refresh
   for f in "$@"; do
     # check that the function exists, if not print DOC and bail
     command -v "F_$f" > /dev/null || printDOC
