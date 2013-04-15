@@ -18,6 +18,9 @@
 # Sets useful variables in your bash scripts
 # 
 # History: 
+# 2013-04-15, nathan@frcv.net:
+#       v0.5: Added getsysupdates.
+#           : Also moved to dir, and added a readme.
 # 2013-04-08, nathan@frcv.net:
 #       v0.4: Added xscreensaver activity.
 #           : Functions now in groups, this helps with documentation.
@@ -50,7 +53,7 @@
 declare -a  CLASS_1=(3 'getload' 'getmem' 'getnetspeed' 'getcpu' 'gettemp')
 declare -a  CLASS_2=(30 'getip' 'getbatt' 'getgw' 'getessid' 'screensaver')
 declare -a  CLASS_3=(60 'sshagent' 'getdisks')
-declare -a  CLASS_4=(300 'getexternalip')
+declare -a  CLASS_4=(300 'getexternalip', 'getsysupdates')
 
 # Where the cache file is going to be stored.
 MEMFILE=/run/shm/stats.bash
@@ -297,6 +300,44 @@ F_getnetspeed() {
 #DOC 
 #DOC                                SOFTWARE
 #DOC -------------------------------------------------------------------------------------------
+#DOC getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 if error.
+F_getsysupdates () {
+  local prefix="SYSUPDATES"
+  unsett $prefix
+  if [ ! $GLOBAL_SYSUPDATES ]; then
+    GLOBAL_SYSUPDATES=$CTIME
+  fi
+
+  # if we have apt-get
+  if which apt-get &> /dev/null; then
+      # get mtime of pkgcache, if it doesn't exist bail
+      if [ -f /var/cache/apt/pkgcache.bin ]; then
+        local pkgcache=`stat -c %Y /var/cache/apt/pkgcache.bin`
+      else 
+        STAT_SYSUPDATES=-1
+        [ $1 ] && printSTAT $prefix
+        return
+      fi
+
+      # get mtime of status
+      if [ -f /var/lib/dpkg/status ]; then
+        local pkgstatus=`stat -c %Y /var/lib/dpkg/status`
+      else
+        local pkgstatus=$CTIME
+      fi
+
+      # if we havent run since last apt-get update, run now
+      if [ $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
+        STAT_SYSUPDATES=`apt-get --just-print --quiet --quiet dist-upgrade | grep --count "^Inst"`
+        GLOBAL_SYSUPDATES=$CTIME
+      fi
+  else
+    # TODO: other package managers
+    STAT_SYSUPDATES=-1
+  fi
+  [ $1 ] && printSTAT $prefix
+}
+
 #DOC screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
 F_screensaver () {
   local prefix="SCREENSAVER"
