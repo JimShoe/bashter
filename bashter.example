@@ -1,0 +1,32 @@
+#!/bin/bash 
+
+####### This is used for defining your own function #########
+# declare a new class with a timeout and list of function
+declare -a  CLASS_100=(60 'getexample')
+
+# these are yournew functions
+F_getexample () {
+  local prefix="EXAMPLE"
+  unsett $prefix
+  STAT_EXAMPLE_VERSION="1"
+  [ $1 ] && printSTAT $prefix
+}
+#############################################################
+
+source bashter
+
+echo "Here are a couple examples"
+echo "Load=>     "$STAT_LOAD
+echo "Free Mem=> "$STAT_MEM_F
+echo ""
+echo "Below are the rest!"
+echo "___________________"
+set | grep ^STAT_ 
+echo
+echo "Or use eval \$(./bashter getload)"
+eval $(./bashter getload)
+echo "Load=>     "$STAT_LOAD
+echo
+echo "Below are the GLOBALS!"
+echo "___________________"
+set | grep ^GLOBAL_ 
