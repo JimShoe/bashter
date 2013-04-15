@@ -19,6 +19,8 @@
 # 
 # History: 
 # 2013-04-15, nathan@frcv.net:
+#       v0.6: Added refresh
+# 2013-04-15, nathan@frcv.net:
 #       v0.5: Added getsysupdates.
 #           : Also moved to dir, and added a readme.
 # 2013-04-08, nathan@frcv.net:

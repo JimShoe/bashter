@@ -1,9 +1,11 @@
 Sets useful variables in your bash scripts
 
 History: 
-2013-04-15, nathan@frcv.net:                                                                                   
-      v0.5: Added getsysupdates.                                                                               
-          : Also moved to dir, and added a readme.   
+2013-04-15, nathan@frcv.net:
+      v0.6: Added refresh
+2013-04-15, nathan@frcv.net:
+      v0.5: Added getsysupdates.
+          : Also moved to dir, and added a readme.
 2013-04-08, nathan@frcv.net:
       v0.4: Added xscreensaver activity.
           : Functions now in groups, this helps with documentation.
@@ -77,6 +79,9 @@ getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 
 screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
 sshagent      : Sets STAT_SSH_AGENT to 0 or 1 based on if ssh-add has identities set.
 
+                               MAINTENANCE
+-------------------------------------------------------------------------------------------
+refresh       : Delete and recreate the cash.  Run this is something is weird.
 
 
 Copyright (C) 2013 Nathan Warner <nathan@frcv.net>
