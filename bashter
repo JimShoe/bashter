@@ -365,7 +365,7 @@ F_sshagent () {
 #DOC 
 #DOC                                MAINTENANCE
 #DOC -------------------------------------------------------------------------------------------
-#DOC refresh       : Delete and recreate the cache.  Run this is something is weird.
+#DOC refresh       : Delete and recreate the cache.  Run this if something is weird.
 refresh () {
   rm $MEMFILE
   GLOBAL_LTIME=$CTIME

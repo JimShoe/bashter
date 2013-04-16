@@ -81,7 +81,7 @@ sshagent      : Sets STAT_SSH_AGENT to 0 or 1 based on if ssh-add has identities
 
                                MAINTENANCE
 -------------------------------------------------------------------------------------------
-refresh       : Delete and recreate the cache.  Run this is something is weird.
+refresh       : Delete and recreate the cache.  Run this if something is weird.
 
 
 Copyright (C) 2013 Nathan Warner <nathan@frcv.net>
