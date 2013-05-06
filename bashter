@@ -55,7 +55,7 @@
 declare -a  CLASS_1=(3 'getload' 'getmem' 'getnetspeed' 'getcpu' 'gettemp')
 declare -a  CLASS_2=(30 'getip' 'getbatt' 'getgw' 'getessid' 'screensaver')
 declare -a  CLASS_3=(60 'sshagent' 'getdisks')
-declare -a  CLASS_4=(300 'getexternalip', 'getsysupdates')
+declare -a  CLASS_4=(300 'getexternalip' 'getsysupdates')
 
 # Where the cache file is going to be stored.
 MEMFILE=/run/shm/stats.bash
@@ -318,6 +318,7 @@ F_getsysupdates () {
       else 
         STAT_SYSUPDATES=-1
         [ $1 ] && printSTAT $prefix
+        GLOBAL_SYSUPDATES=$CTIME
         return
       fi
 
@@ -331,12 +332,12 @@ F_getsysupdates () {
       # if we havent run since last apt-get update, run now
       if [ ! "$STAT_SYSUPDATES" -o $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
         STAT_SYSUPDATES=`apt-get --just-print --quiet --quiet dist-upgrade | grep --count "^Inst"`
-        GLOBAL_SYSUPDATES=$CTIME
       fi
   else
     # TODO: other package managers
     STAT_SYSUPDATES=-1
   fi
+  GLOBAL_SYSUPDATES=$CTIME
   [ $1 ] && printSTAT $prefix
 }
 
