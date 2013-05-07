@@ -18,6 +18,8 @@
 # Sets useful variables in your bash scripts
 # 
 # History: 
+# 2013-05-07, nathan@frcv.net:
+#       v0.7: Bug fixes
 # 2013-04-15, nathan@frcv.net:
 #       v0.6: Added refresh
 # 2013-04-15, nathan@frcv.net:
@@ -429,6 +431,10 @@ if [ ! -e $MEMFILE ]; then
   for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
     eval "GLOBAL_$class=$CTIME"
   done
+  runall
+  save
+  evalall
+  return
 else
   evalall
 fi
@@ -456,14 +462,7 @@ fi
 # lock our memfile so we don't run over ourselves
 exec 9>>$MEMFILE
 if ! flock -n 9; then
-	# another instance is already running
-	return
-fi
-
-# if MEMFILE doesn't exist, run everything, save and exit
-if [ $DTIME -le 0 ]; then 
-  runall
-  save
+  # another instance is already running
   evalall
   return
 fi
