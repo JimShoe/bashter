@@ -18,6 +18,9 @@
 # Sets useful variables in your bash scripts
 # 
 # History: 
+# 2013-08-07, brimstone@the.narrow.ws:
+#       v0.8: Moved locking up so it doesn't stop on itself
+#           : Fixed spelling error
 # 2013-05-07, nathan@frcv.net:
 #       v0.7: Bug fixes
 # 2013-04-15, nathan@frcv.net:
