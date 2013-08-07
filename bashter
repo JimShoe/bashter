@@ -420,6 +420,13 @@ printDOC(){
   exit
 }
 
+# lock our memfile so we don't run over ourselves
+exec 9>>$MEMFILE
+if ! flock -n 9; then
+  # another instance is already running
+  evalall
+  return
+fi
 
 # Get current time
 CTIME=`date +%s`
@@ -459,24 +466,16 @@ elif [ $(basename $0) == "bashter" ]; then
   printDOC
 fi
 
-# lock our memfile so we don't run over ourselves
-exec 9>>$MEMFILE
-if ! flock -n 9; then
-  # another instance is already running
-  evalall
-  return
-fi
-
 # loop through each class
 for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
   # find the diff time between this run and the last time the class ran
   eval $class"_DTIME=$(($CTIME - GLOBAL_$class))"
-  
+
   # crazy that gets the dtime and defines a new class from the current class in this loop
   NEWCLASS_DTIME=$(eval "echo \$"$class"_DTIME")
   declare -a NEWCLASS=$(eval "echo \(\${${class}[@]}\)")
 
-  # if this class's diff time is grater than the timeout set run all of its functions
+  # if this class's diff time is greater than the timeout set run all of its functions
   if [ $NEWCLASS_DTIME -ge ${NEWCLASS[0]} ]; then
     for func in ${NEWCLASS[@]:1}; do
       eval F_$func
