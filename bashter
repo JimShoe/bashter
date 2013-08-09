@@ -403,7 +403,6 @@ refresh () {
 
 # Save all STAT variables to the MEMFILE
 save(){
-  GLOBAL_LTIME=$CTIME
   set | grep ^STAT_ > $MEMFILE
   set | grep ^GLOBAL_ >> $MEMFILE
 }
@@ -463,7 +462,6 @@ runonce(){
 
   # Set some vars if no MEMFILE, or eval the MEMFILE
   if [ ! -e $MEMFILE ]; then
-    GLOBAL_LTIME=$CTIME
     runall
     save
     return
@@ -493,16 +491,12 @@ if [ "$1" ]; then
       exit
     fi
   done
+  evalall
   for f in "$@"; do
     # run command sending it something
-    # TODO this repeats code from the runonce on line 467
-    # TODO pick:
-    # TODO 1) clean up runonce so it only runs set classes (hard)
-    # TODO 2) only print out the variables from the functions that were requested (easy)
     F_$f 1
   done
   # save work to memfile
-  evalall
   save
   exit
 # if we are running stand alone print the DOC and bail
