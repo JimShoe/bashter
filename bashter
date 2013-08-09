@@ -495,6 +495,9 @@ if [ "$1" ]; then
   for f in "$@"; do
     # run command sending it something
     # TODO this repeats code from the runonce on line 467
+    # TODO pick:
+    # TODO 1) clean up runonce so it only runs set classes (hard)
+    # TODO 2) only print out the variables from the functions that were requested (easy)
     F_$f 1
   done
   # save work to memfile
@@ -508,7 +511,6 @@ fi
 
 # run our update loop once
 runonce
-
 
 # save everything
 save
