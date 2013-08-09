@@ -240,7 +240,7 @@ F_gettemp () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC
+#DOC 
 #DOC                                NETWORK
 #DOC -------------------------------------------------------------------------------------------
 
@@ -325,7 +325,7 @@ F_getnetspeed() {
   GLOBAL_NETSPEED_LTIME=$CTIME
   [ $1 ] && printSTAT $prefix
 }
-#DOC
+#DOC 
 #DOC                                SOFTWARE
 #DOC -------------------------------------------------------------------------------------------
 #DOC getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 if error.
@@ -389,17 +389,13 @@ F_sshagent () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC
+#DOC 
 #DOC                                MAINTENANCE
 #DOC -------------------------------------------------------------------------------------------
 #DOC refresh       : Delete and recreate the cache.  Run this if something is weird.
 refresh () {
   rm $MEMFILE
-  GLOBAL_LTIME=$CTIME
-  # set current time for each class defined.
-  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-    eval "GLOBAL_$class=$CTIME"
-  done
+  runonce
   exit
 }
 
