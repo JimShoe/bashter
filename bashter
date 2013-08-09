@@ -408,9 +408,27 @@ evalall() {
 
 # Run though all the stat functions.
 runall() {
- for funcs in $(typeset -F | awk '/F_/ {print $NF}'); do
-   eval $funcs
- done
+# for funcs in $(typeset -F | awk '/F_/ {print $NF}'); do
+#   eval $funcs
+# done
+  # loop through each class
+  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
+    # find the diff time between this run and the last time the class ran
+    eval $class"_DTIME=$(($CTIME - GLOBAL_$class))"
+
+    # crazy that gets the dtime and defines a new class from the current class in this loop
+    NEWCLASS_DTIME=$(eval "echo \$"$class"_DTIME")
+    declare -a NEWCLASS=$(eval "echo \(\${${class}[@]}\)")
+
+    # if this class's diff time is greater than the timeout set run all of its functions
+    if [ $NEWCLASS_DTIME -ge ${NEWCLASS[0]} ]; then
+      for func in ${NEWCLASS[@]:1}; do
+        eval F_$func
+      done
+      # sets this class's time to current time
+      eval "GLOBAL_$class=$CTIME"
+    fi
+  done
 }
 
 # Unset variables, this will remove them so that MEMFILE doesn't have old info.
@@ -476,6 +494,7 @@ if [ "$1" ]; then
   done
   for f in "$@"; do
     # run command sending it something
+    # TODO this repeats code from the runonce on line 467
     F_$f 1
   done
   # save work to memfile
@@ -490,24 +509,6 @@ fi
 # run our update loop once
 runonce
 
-# loop through each class
-for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-  # find the diff time between this run and the last time the class ran
-  eval $class"_DTIME=$(($CTIME - GLOBAL_$class))"
-
-  # crazy that gets the dtime and defines a new class from the current class in this loop
-  NEWCLASS_DTIME=$(eval "echo \$"$class"_DTIME")
-  declare -a NEWCLASS=$(eval "echo \(\${${class}[@]}\)")
-
-  # if this class's diff time is greater than the timeout set run all of its functions
-  if [ $NEWCLASS_DTIME -ge ${NEWCLASS[0]} ]; then
-    for func in ${NEWCLASS[@]:1}; do
-      eval F_$func
-    done
-    # sets this class's time to current time
-    eval "GLOBAL_$class=$CTIME"
-  fi
-done
 
 # save everything
 save
