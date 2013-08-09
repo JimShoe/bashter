@@ -433,34 +433,38 @@ printDOC(){
   exit
 }
 
-# lock our memfile so we don't run over ourselves
-exec 9>>$MEMFILE
-if ! flock -n 9; then
-  # another instance is already running
-  evalall
-  return
-fi
 
-# Get current time
-CTIME=`date +%s`
+runonce(){
+  # lock our memfile so we don't run over ourselves
+  exec 9>>$MEMFILE
+  if ! flock -n 9; then
+    # another instance is already running
+    evalall
+    return
+  fi
 
-# Set some vars if no MEMFILE, or eval the MEMFILE
-if [ ! -e $MEMFILE ]; then
-  GLOBAL_LTIME=$CTIME
-  # set currant time for each class defined.
-  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-    eval "GLOBAL_$class=$CTIME"
-  done
-  runall
-  save
-  evalall
-  return
-else
-  evalall
-fi
+  # Get current time
+  CTIME=`date +%s`
 
-# Calculate some time since the last time the script ran
-DTIME=$(($CTIME - $GLOBAL_LTIME))
+  # Set some vars if no MEMFILE, or eval the MEMFILE
+  if [ ! -e $MEMFILE ]; then
+    GLOBAL_LTIME=$CTIME
+    # set currant time for each class defined.
+    for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
+      eval "GLOBAL_$class=$CTIME"
+    done
+    runall
+    save
+    evalall
+    flock -u 9
+    return
+  else
+    evalall
+  fi
+
+  # Calculate some time since the last time the script ran
+  DTIME=$(($CTIME - $GLOBAL_LTIME))
+}
 
 # If we have arguments run them as functions
 if [ "$1" ]; then
@@ -477,7 +481,11 @@ if [ "$1" ]; then
 # if we are running stand alone print the DOC and bail
 elif [ $(basename $0) == "bashter" ]; then
   printDOC
+  exit
 fi
+
+# run our update loop once
+runonce
 
 # loop through each class
 for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
