@@ -461,10 +461,6 @@ runonce(){
   # Set some vars if no MEMFILE, or eval the MEMFILE
   if [ ! -e $MEMFILE ]; then
     GLOBAL_LTIME=$CTIME
-    # set current time for each class defined.
-    for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-      eval "GLOBAL_$class=$CTIME"
-    done
     runall
     save
     flock -u 9
