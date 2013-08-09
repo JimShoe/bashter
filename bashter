@@ -470,7 +470,6 @@ runonce(){
     GLOBAL_LTIME=$CTIME
     runall
     save
-    flock -u 9
     return
   fi
   # lock our memfile so we don't run over ourselves
@@ -480,7 +479,9 @@ runonce(){
     evalall
     return
   fi
-  evalall
+  runall
+  save
+  flock -u 9
 
   # Calculate some time since the last time the script ran
   DTIME=$(($CTIME - $GLOBAL_LTIME))
@@ -518,7 +519,3 @@ fi
 
 # run our update loop once
 runonce
-
-# save everything
-save
-evalall
