@@ -215,7 +215,11 @@ F_getmem () {
 F_getoom () {
   local prefix="OOM"
   unsett $prefix
-  for d in /proc/[0-9]*; do [ $(< $d/oom_score) -gt 0 ]&&printf "%3d %s\n" $(< $d/oom_score) $(sed -e 's/\x0.*//'< $d/cmdline); done | sort -rn | head -1 | read -r STAT_OOM_PID STAT_OOM_CMD
+  read -ru3 STAT_OOM_PID STAT_OOM_CMD 3< <(
+  for d in /proc/[0-9]*; do
+    score="$(< $d/oom_score)"
+    [ -n "$score" -a "$score" -gt 0 ] && printf "%3d %s\n" $score $(sed -e 's/\x0.*//'< $d/cmdline)
+  done 2>/dev/null | sort -rn | head -1)
   [ $1 ] && printSTAT $prefix
 }
 
