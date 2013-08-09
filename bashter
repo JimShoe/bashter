@@ -484,7 +484,6 @@ runonce(){
 # If we have arguments run them as functions
 if [ "$1" ]; then
   [ $1 == "refresh" ] && refresh
-  runonce
   for f in "$@"; do
     # check that the function exists, if not print DOC and bail
     command -v "F_$f" > /dev/null
@@ -503,6 +502,7 @@ if [ "$1" ]; then
     F_$f 1
   done
   # save work to memfile
+  evalall
   save
   exit
 # if we are running stand alone print the DOC and bail
