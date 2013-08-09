@@ -18,7 +18,14 @@
 # Sets useful variables in your bash scripts
 #
 # History:
-# 2013-08-07, brimstone@the.narrow.ws:
+# 2013-08-09, brimstone@the.narro.ws:
+#       v0.9: Fixed spelling errors
+#             Major rework of runall and main function resulting in a runonce
+#               function for scripts that load bashter once then run their
+#               own loop
+#             Made cli use of bashter slightly more efficient
+#             Added getoom function
+# 2013-08-07, brimstone@the.narro.ws:
 #       v0.8: Moved locking up so it doesn't stop on itself
 #           : Fixed spelling error
 # 2013-05-07, nathan@frcv.net:
