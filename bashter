@@ -479,12 +479,10 @@ runonce(){
     evalall
     return
   fi
+  evalall
   runall
   save
   flock -u 9
-
-  # Calculate some time since the last time the script ran
-  DTIME=$(($CTIME - $GLOBAL_LTIME))
 }
 
 # If we have arguments run them as functions
