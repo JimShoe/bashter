@@ -1,7 +1,14 @@
 Sets useful variables in your bash scripts
 
-History: 
-2013-08-07, brimstone@the.narrow.ws:
+History:
+2013-08-09, brimstone@the.narro.ws:
+      v0.9: Fixed spelling errors
+            Major rework of runall and main function resulting in a runonce
+              function for scripts that load bashter once then run their
+              own loop
+            Made cli use of bashter slightly more efficient
+            Added getoom function
+2013-08-07, brimstone@the.narro.ws:
       v0.8: Moved locking up so it doesn't stop on itself
           : Fixed spelling error
 2013-05-07, nathan@frcv.net:
@@ -39,11 +46,10 @@ Usage:
   3b. Run normally   : ./bashter function_name
   4.  Use Variables  : echo $STAT_LOAD
 
-
                                HARDWARE
 -------------------------------------------------------------------------------------------
 getbatt       : Sets Battery usage stats.
-                  STAT_BATT_P : Percent 
+                  STAT_BATT_P : Percent
                   STAT_BATT_C : Charging
                   STAT_BATT_T : Time Remaining
 getcpu        : Sets STAT_CPU_P_CPU[num] with percent used cpu.
@@ -61,13 +67,16 @@ getdisks      : Sets Disk usage stats.
 getload       : Sets STAT_LOAD to current load.
 getmdata      : Sets STAT_RAID_MDETA to time until mdraid is finished it's current processes.
 getmem        : Sets Memory usage stats.
-                  STAT_MEM_U      : used 
+                  STAT_MEM_U      : used
                   STAT_MEM_F      : free
                   STAT_MEM_T      : total
                   STAT_MEM_UP     : Used Percent
                   STAT_MEM_COMMIT : Percent of memory applications have requested
                                   : This could be over 100% if you've over committed memory
-gettemp       : Sets STAT_TEMP to acpi -t 
+getoom        : Sets top Out-Of-Memory Killer target
+                  STAT_OOM_PID		: pid
+                  STAT_OOM_CMD		: cmd
+gettemp       : Sets STAT_TEMP to acpi -t
 
                                NETWORK
 -------------------------------------------------------------------------------------------
@@ -81,14 +90,12 @@ getnetspeed   : Sets STAT_NETSPEED_RCV_[device] and STAT_NETSPEED_TX_[device] wi
                                SOFTWARE
 -------------------------------------------------------------------------------------------
 getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 if error.
-screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
+screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscreensaver is locked.
 sshagent      : Sets STAT_SSH_AGENT to 0 or 1 based on if ssh-add has identities set.
 
                                MAINTENANCE
 -------------------------------------------------------------------------------------------
 refresh       : Delete and recreate the cache.  Run this if something is weird.
-
-
 Copyright (C) 2013 Nathan Warner <nathan@frcv.net>
 
 This program is free software; you can redistribute it and/or modify
@@ -103,5 +110,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-
