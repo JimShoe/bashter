@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 #
 # Copyright (C) 2013 Nathan Warner <nathan@frcv.net>
 #
@@ -16,9 +16,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # Sets useful variables in your bash scripts
-# 
-# History: 
-# 2013-08-07, brimstone@the.narrow.ws:
+#
+# History:
+# 2013-08-09, brimstone@the.narro.ws:
+#       v0.9: Fixed spelling errors
+#             Major rework of runall and main function resulting in a runonce
+#               function for scripts that load bashter once then run their
+#               own loop
+#             Made cli use of bashter slightly more efficient
+#             Added getoom function
+# 2013-08-07, brimstone@the.narro.ws:
 #       v0.8: Moved locking up so it doesn't stop on itself
 #           : Fixed spelling error
 # 2013-05-07, nathan@frcv.net:
@@ -57,7 +64,7 @@
 #   4.  Use Variables  : echo $STAT_LOAD
 
 # Declare update classes
-declare -a  CLASS_1=(3 'getload' 'getmem' 'getnetspeed' 'getcpu' 'gettemp')
+declare -a  CLASS_1=(3 'getload' 'getmem' 'getnetspeed' 'getcpu' 'gettemp' 'getoom')
 declare -a  CLASS_2=(30 'getip' 'getbatt' 'getgw' 'getessid' 'screensaver')
 declare -a  CLASS_3=(60 'sshagent' 'getdisks')
 declare -a  CLASS_4=(300 'getexternalip' 'getsysupdates')
@@ -70,7 +77,7 @@ MEMFILE=/run/shm/stats.bash
 #DOC                                HARDWARE
 #DOC -------------------------------------------------------------------------------------------
 #DOC getbatt       : Sets Battery usage stats.
-#DOC                   STAT_BATT_P : Percent 
+#DOC                   STAT_BATT_P : Percent
 #DOC                   STAT_BATT_C : Charging
 #DOC                   STAT_BATT_T : Time Remaining
 F_getbatt () {
@@ -81,7 +88,7 @@ F_getbatt () {
   local BATTP=${tmp##* }
   [ "$BATTP" = "" ] && return
   STAT_BATT_P="$BATTP"
-  
+
   #Battery 0: Discharging, 93%, 01:46:45 remaining
   if [ $(grep -c "Charging" <<< "$acpi") = 1 ]; then
     STAT_BATT_C="1"
@@ -130,7 +137,7 @@ F_getcpu () {
     local work_over_period=$((TMP_CPU_WORK_$cpu - GLOBAL_CPU_WORK_$cpu))
     #funky since bash doesn't have floating points
     local percent=$(((work_over_period*100)/$total_over_period))
-    
+
     # set final values
     eval "STAT_CPU_P_$cpu=$percent"
     eval "GLOBAL_CPU_TOTAL_$cpu=\$TMP_CPU_TOTAL_$cpu"
@@ -189,7 +196,7 @@ F_getmdeta () {
 }
 
 #DOC getmem        : Sets Memory usage stats.
-#DOC                   STAT_MEM_U      : used 
+#DOC                   STAT_MEM_U      : used
 #DOC                   STAT_MEM_F      : free
 #DOC                   STAT_MEM_T      : total
 #DOC                   STAT_MEM_UP     : Used Percent
@@ -209,7 +216,21 @@ F_getmem () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC gettemp       : Sets STAT_TEMP to acpi -t 
+#DOC getoom        : Sets top Out-Of-Memory Killer target
+#DOC                   STAT_OOM_PID		: pid
+#DOC                   STAT_OOM_CMD		: cmd
+F_getoom () {
+  local prefix="OOM"
+  unsett $prefix
+  read -ru3 STAT_OOM_PID STAT_OOM_CMD 3< <(
+  for d in /proc/[0-9]*; do
+    score="$(< $d/oom_score)"
+    [ -n "$score" -a "$score" -gt 0 ] && printf "%3d %s\n" $score $(sed -e 's/\x0.*//'< $d/cmdline)
+  done 2>/dev/null | sort -rn | head -1)
+  [ $1 ] && printSTAT $prefix
+}
+
+#DOC gettemp       : Sets STAT_TEMP to acpi -t
 F_gettemp () {
   local prefix="TEMP"
   unsett $prefix
@@ -219,7 +240,7 @@ F_gettemp () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC 
+#DOC
 #DOC                                NETWORK
 #DOC -------------------------------------------------------------------------------------------
 
@@ -258,7 +279,7 @@ F_getip () {
   elif which ip >/dev/null; then
     eval $(ip -o addr | awk 'BEGIN { FS=":| +|/"} /inet / {printf "STAT_IP_%s=\"%s\"\n", toupper($3), $5}')
   else
-   return 
+   return
   fi
   [ $1 ] && printSTAT $prefix
 }
@@ -275,11 +296,11 @@ F_getnetspeed() {
     GLOBAL_NETSPEED_LTIME=$CTIME
     return
   fi
-  
+
   # time since last run
   TMP_NETSPEED_LTIME=$(($CTIME - $GLOBAL_NETSPEED_LTIME))
   [ $TMP_NETSPEED_LTIME == 0 ] && TMP_NETSPEED_LTIME=1
-  
+
   # eval temp latest net stats
   eval $(awk 'sub(/\:/, " ") {print "local TMP_NETSPEED_RCV_"toupper($1)"="$2 " local TMP_NETSPEED_TX_"toupper($1)"="$10}' /proc/net/dev)
 
@@ -287,7 +308,7 @@ F_getnetspeed() {
   for int in $(awk 'sub(/\:/, " ") {print toupper($1)}' /proc/net/dev); do
     # get the number of bytes changed
     RCV_SPEED=$((TMP_NETSPEED_RCV_$int - GLOBAL_NETSPEED_RCV_$int))
-    # divide num of changed bytes by the update interval 
+    # divide num of changed bytes by the update interval
     [ $RCV_SPEED != 0 ] && RCV_SPEED=$(($RCV_SPEED / $TMP_NETSPEED_LTIME))
     # eval bytes per sec
     eval "STAT_NETSPEED_RCV_$int=$RCV_SPEED"
@@ -295,7 +316,7 @@ F_getnetspeed() {
     TX_SPEED=$((TMP_NETSPEED_TX_$int - GLOBAL_NETSPEED_TX_$int))
     [ $TX_SPEED != 0 ] && TX_SPEED=$((TX_SPEED / TMP_NETSPEED_LTIME))
     eval "STAT_NETSPEED_TX_$int=$TX_SPEED"
- 
+
     # save the current bytes to check next time
     eval "GLOBAL_NETSPEED_RCV_$int=\$TMP_NETSPEED_RCV_$int"
     eval "GLOBAL_NETSPEED_TX_$int=\$TMP_NETSPEED_TX_$int"
@@ -304,7 +325,7 @@ F_getnetspeed() {
   GLOBAL_NETSPEED_LTIME=$CTIME
   [ $1 ] && printSTAT $prefix
 }
-#DOC 
+#DOC
 #DOC                                SOFTWARE
 #DOC -------------------------------------------------------------------------------------------
 #DOC getsysupdates : Sets STAT_SYSUPDATES to number of packages needing update or -1 if error.
@@ -320,7 +341,7 @@ F_getsysupdates () {
       # get mtime of pkgcache, if it doesn't exist bail
       if [ -f /var/cache/apt/pkgcache.bin ]; then
         local pkgcache=`stat -c %Y /var/cache/apt/pkgcache.bin`
-      else 
+      else
         STAT_SYSUPDATES=-1
         [ $1 ] && printSTAT $prefix
         GLOBAL_SYSUPDATES=$CTIME
@@ -334,7 +355,7 @@ F_getsysupdates () {
         local pkgstatus=$CTIME
       fi
 
-      # if we havent run since last apt-get update, run now
+      # if we haven't run since last apt-get update, run now
       if [ ! "$STAT_SYSUPDATES" -o $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
         STAT_SYSUPDATES=`apt-get --just-print --quiet --quiet dist-upgrade | grep --count "^Inst"`
       fi
@@ -346,7 +367,7 @@ F_getsysupdates () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
+#DOC screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscreensaver is locked.
 F_screensaver () {
   local prefix="SCREENSAVER"
   unsett $prefix
@@ -368,19 +389,17 @@ F_sshagent () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC 
+#DOC
 #DOC                                MAINTENANCE
 #DOC -------------------------------------------------------------------------------------------
 #DOC refresh       : Delete and recreate the cache.  Run this if something is weird.
 refresh () {
   rm $MEMFILE
   GLOBAL_LTIME=$CTIME
-  # set currant time for each class defined.
+  # set current time for each class defined.
   for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
     eval "GLOBAL_$class=$CTIME"
   done
-  runall
-  save
   exit
 }
 
@@ -400,9 +419,27 @@ evalall() {
 
 # Run though all the stat functions.
 runall() {
- for funcs in $(typeset -F | awk '/F_/ {print $NF}'); do
-   eval $funcs
- done
+# for funcs in $(typeset -F | awk '/F_/ {print $NF}'); do
+#   eval $funcs
+# done
+  # loop through each class
+  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
+    # find the diff time between this run and the last time the class ran
+    eval $class"_DTIME=$(($CTIME - GLOBAL_$class))"
+
+    # crazy that gets the dtime and defines a new class from the current class in this loop
+    NEWCLASS_DTIME=$(eval "echo \$"$class"_DTIME")
+    declare -a NEWCLASS=$(eval "echo \(\${${class}[@]}\)")
+
+    # if this class's diff time is greater than the timeout set run all of its functions
+    if [ $NEWCLASS_DTIME -ge ${NEWCLASS[0]} ]; then
+      for func in ${NEWCLASS[@]:1}; do
+        eval F_$func
+      done
+      # sets this class's time to current time
+      eval "GLOBAL_$class=$CTIME"
+    fi
+  done
 }
 
 # Unset variables, this will remove them so that MEMFILE doesn't have old info.
@@ -423,71 +460,60 @@ printDOC(){
   exit
 }
 
-# lock our memfile so we don't run over ourselves
-exec 9>>$MEMFILE
-if ! flock -n 9; then
-  # another instance is already running
+
+runonce(){
+  # Get current time
+  CTIME=`date +%s`
+
+  # Set some vars if no MEMFILE, or eval the MEMFILE
+  if [ ! -e $MEMFILE ]; then
+    GLOBAL_LTIME=$CTIME
+    runall
+    save
+    return
+  fi
+  # lock our memfile so we don't run over ourselves
+  exec 9>>$MEMFILE
+  if ! flock -n 9; then
+    # another instance is already running
+    evalall
+    return
+  fi
   evalall
-  return
-fi
-
-# Get current time
-CTIME=`date +%s`
-
-# Set some vars if no MEMFILE, or eval the MEMFILE
-if [ ! -e $MEMFILE ]; then
-  GLOBAL_LTIME=$CTIME
-  # set currant time for each class defined.
-  for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-    eval "GLOBAL_$class=$CTIME"
-  done
   runall
   save
-  evalall
-  return
-else
-  evalall
-fi
-
-# Calculate some time since the last time the script ran
-DTIME=$(($CTIME - $GLOBAL_LTIME))
+  flock -u 9
+}
 
 # If we have arguments run them as functions
 if [ "$1" ]; then
   [ $1 == "refresh" ] && refresh
   for f in "$@"; do
     # check that the function exists, if not print DOC and bail
-    command -v "F_$f" > /dev/null || printDOC
+    command -v "F_$f" > /dev/null
+    if [ $? != 0 ]; then
+      echo "Command '$f' not found"
+	  printDOC
+      exit
+    fi
+  done
+  for f in "$@"; do
     # run command sending it something
+    # TODO this repeats code from the runonce on line 467
+    # TODO pick:
+    # TODO 1) clean up runonce so it only runs set classes (hard)
+    # TODO 2) only print out the variables from the functions that were requested (easy)
     F_$f 1
   done
   # save work to memfile
+  evalall
   save
   exit
 # if we are running stand alone print the DOC and bail
-elif [ $(basename $0) == "bashter" ]; then 
+elif [ $(basename $0) == "bashter" ]; then
   printDOC
+  exit
 fi
 
-# loop through each class
-for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
-  # find the diff time between this run and the last time the class ran
-  eval $class"_DTIME=$(($CTIME - GLOBAL_$class))"
-
-  # crazy that gets the dtime and defines a new class from the current class in this loop
-  NEWCLASS_DTIME=$(eval "echo \$"$class"_DTIME")
-  declare -a NEWCLASS=$(eval "echo \(\${${class}[@]}\)")
-
-  # if this class's diff time is greater than the timeout set run all of its functions
-  if [ $NEWCLASS_DTIME -ge ${NEWCLASS[0]} ]; then
-    for func in ${NEWCLASS[@]:1}; do
-      eval F_$func
-    done
-    # sets this class's time to current time
-    eval "GLOBAL_$class=$CTIME"
-  fi
-done
-
-# save everything
-save
-evalall
+# run our update loop once
+runonce
