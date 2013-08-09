@@ -348,7 +348,7 @@ F_getsysupdates () {
         local pkgstatus=$CTIME
       fi
 
-      # if we havent run since last apt-get update, run now
+      # if we haven't run since last apt-get update, run now
       if [ ! "$STAT_SYSUPDATES" -o $GLOBAL_SYSUPDATES -le  $pkgcache -o $GLOBAL_SYSUPDATES -le $pkgstatus ]; then
         STAT_SYSUPDATES=`apt-get --just-print --quiet --quiet dist-upgrade | grep --count "^Inst"`
       fi
@@ -360,7 +360,7 @@ F_getsysupdates () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscrensaver is locked.
+#DOC screensaver   : Sets STAT_SCREENSAVER_ACTIVE to 0 or 1 based on if xscreensaver is locked.
 F_screensaver () {
   local prefix="SCREENSAVER"
   unsett $prefix
@@ -389,7 +389,7 @@ F_sshagent () {
 refresh () {
   rm $MEMFILE
   GLOBAL_LTIME=$CTIME
-  # set currant time for each class defined.
+  # set current time for each class defined.
   for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
     eval "GLOBAL_$class=$CTIME"
   done
@@ -461,7 +461,7 @@ runonce(){
   # Set some vars if no MEMFILE, or eval the MEMFILE
   if [ ! -e $MEMFILE ]; then
     GLOBAL_LTIME=$CTIME
-    # set currant time for each class defined.
+    # set current time for each class defined.
     for class in $(set | awk -F= "/^CLASS_/"'{ print $1 }'); do
       eval "GLOBAL_$class=$CTIME"
     done
