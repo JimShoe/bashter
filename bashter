@@ -186,12 +186,12 @@ F_getload () {
   [ $1 ] && printSTAT $prefix
 }
 
-#DOC getmdata      : Sets STAT_RAID_MDETA to time until mdraid is finished it's current processes.
+#DOC getmdeta      : Sets STAT_RAID_MDETA to time until mdraid is finished its current processes.
 F_getmdeta () {
   [ -e /proc/mdstat ] || return
   local prefix="RAID"
   unsett $prefix
-  STAT_RAID_MDETA="\"$(date -d "$(grep finish /proc/mdstat 2>/dev/null | sed -e 's/^.*finish=//;s/ .*$//;s/\..*$//')min")\""
+  STAT_RAID_MDETA=$(date -d "$(grep finish /proc/mdstat 2>/dev/null | sed -e 's/^.*finish=//;s/ .*$//;s/\..*$//')min")
   [ $1 ] && printSTAT $prefix
 }
 
