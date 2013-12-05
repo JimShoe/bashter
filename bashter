@@ -256,7 +256,7 @@ F_getessid () {
 F_getexternalip () {
   local prefix="EXT_IP"
   unsett $prefix
-  local IP=$(wget --quiet --output-document=- --timeout=3 ip.appspot.com)
+  local IP=$(wget --quiet --output-document=- --timeout=3 https://ip.appspot.com)
   [ -n $IP ] && STAT_EXT_IP=$IP
   [ $1 ] && printSTAT $prefix
 }
