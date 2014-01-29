@@ -439,7 +439,7 @@ runall() {
 
 # Unset variables, this will remove them so that MEMFILE doesn't have old info.
 unsett() {
-  key="^STAT_$1_"
+  key="^STAT_$1"
   for var in $(set | awk -F= "/$key/"'{ print $1 }'); do
     unset $var
   done
@@ -492,6 +492,7 @@ if [ "$1" ]; then
     fi
   done
   evalall
+  CTIME=`date +%s`
   for f in "$@"; do
     # run command sending it something
     F_$f 1
